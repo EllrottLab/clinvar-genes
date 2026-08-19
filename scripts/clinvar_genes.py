@@ -32,12 +32,7 @@ def lookup(gene):
     if not description:
         return {"gene": gene, "gene_id": matching_gene["geneid"], "error": "no germline classification"}
 
-    return {
-        "gene": gene,
-        "gene_id": matching_gene["geneid"],
-        "clinvar_id": clinvar_id,
-        "germline_classification": {"description": description},
-    }
+    return record
 
 
 def main():
@@ -54,7 +49,8 @@ def main():
                 result = {"gene": gene, "error": str(error)}
             output.write(json.dumps(result) + "\n")
             if "error" not in result:
-                print(result["gene"], result["gene_id"], result["germline_classification"]["description"], sep="\t")
+                gene_id = next(item["geneid"] for item in result["genes"] if item["symbol"] == gene)
+                print(gene, gene_id, result["germline_classification"]["description"], sep="\t")
 
 
 if __name__ == "__main__":

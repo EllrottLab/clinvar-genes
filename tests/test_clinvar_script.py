@@ -10,26 +10,17 @@ class ClinVarScriptTest(unittest.TestCase):
         get.return_value = {"esearchresult": {"idlist": []}}
         self.assertEqual(lookup("UNKNOWN"), {"gene": "UNKNOWN", "error": "no ClinVar result"})
 
+        record = {
+            "uid": "123",
+            "title": "complete record",
+            "genes": [{"symbol": "TP53", "geneid": "7157"}],
+            "germline_classification": {"description": "Pathogenic"},
+        }
         get.side_effect = [
             {"esearchresult": {"idlist": ["123"]}},
-            {
-                "result": {
-                    "123": {
-                        "genes": [{"symbol": "TP53", "geneid": "7157"}],
-                        "germline_classification": {"description": "Pathogenic"},
-                    }
-                }
-            },
+            {"result": {"123": record}},
         ]
-        self.assertEqual(
-            lookup("TP53"),
-            {
-                "gene": "TP53",
-                "gene_id": "7157",
-                "clinvar_id": "123",
-                "germline_classification": {"description": "Pathogenic"},
-            },
-        )
+        self.assertEqual(lookup("TP53"), record)
 
 
 if __name__ == "__main__":
