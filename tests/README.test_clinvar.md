@@ -1,4 +1,16 @@
-# ClinVar integration test
+# ClinVar tests
+
+Run both tests from the project root:
+
+```sh
+.venv/bin/python -m unittest discover -v
+```
+
+`test_clinvar_script.py` mocks NCBI responses and verifies that the lookup
+preserves the complete ESummary record, or returns a non-fatal error record
+when no result exists.
+
+## Live integration test
 
 `test_clinvar.py` verifies that a gene from `fixtures/gene_list.txt` has a
 ClinVar record with a germline clinical-significance classification.
@@ -11,7 +23,7 @@ to the NCBI E-utilities API:
    gene appears in `genes` and that `germline_classification.description` is
    non-empty.
 
-Run it from the project root:
+Run only the integration test with:
 
 ```sh
 .venv/bin/python -m unittest tests.test_clinvar -v
@@ -97,3 +109,5 @@ The `<ClinVar ID>` property is dynamic and matches the ID listed in `uids`.
 Clinical significance is the non-empty value at
 `result[clinvar_id].germline_classification.description`, for example
 `"Pathogenic"`, `"Likely pathogenic"`, or `"Uncertain significance"`.
+The script writes the complete `result[clinvar_id]` object as one NDJSON line;
+the outer ESummary response envelope is not included.

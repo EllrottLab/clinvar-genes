@@ -2,13 +2,14 @@
 
 `clinvar_genes.py` reads newline-delimited gene symbols, retrieves one matching
 ClinVar record per gene, and writes one NDJSON record per nonblank input line.
+Successful lines contain the complete ESummary record returned by ClinVar.
 
 ## Usage
 
 Python 3.12 or newer is required. From the project root:
 
 ```sh
-scripts/clinvar_genes.py tests/fixtures/gene_list.txt results.ndjson
+scripts/clinvar_genes.py tests/fixtures/gene_list.txt results.ndjson > results.out.tsv
 ```
 
 The two positional arguments are:
@@ -21,29 +22,28 @@ first matching record, and reads its `germline_classification.description`.
 
 ## Standard output
 
-Successful lookups print the input gene symbol, NCBI Gene ID, and
-classification, separated by tabs:
+Successful lookups print these fields, in order and separated by tabs:
+
+1. Input gene symbol
+2. NCBI Gene ID
+3. `germline_classification.description`
 
 ```text
 TP53	7157	Pathogenic
 ```
 
-Failed lookups are not printed to standard output.
+The usage example redirects this stream to `results.out.tsv`. Failed lookups
+are not printed to standard output; their error records still appear in the
+NDJSON file.
 
 ## NDJSON output
 
-Each line is an independent JSON object. A successful lookup has this shape:
-
-```json
-{"gene":"TP53","gene_id":"7157","clinvar_id":"123","germline_classification":{"description":"Pathogenic"}}
-```
-
-| Field | Description |
-| --- | --- |
-| `gene` | Input gene symbol. |
-| `gene_id` | NCBI Gene ID from the matching ClinVar record. |
-| `clinvar_id` | ClinVar record ID selected by ESearch. |
-| `germline_classification.description` | ClinVar germline clinical significance. |
+Each line is an independent JSON object. On success, it is the complete object
+at `result[clinvar_id]` in the ESummary response. The surrounding response
+envelope (`header`, `result`, and `uids`) is not written, but no fields inside
+the selected ClinVar record are selected, renamed, or discarded. See
+[the test documentation](../tests/README.test_clinvar.md#esummary) for the
+response structure and fields used for standard output.
 
 If no ClinVar record is found, the script writes an error record and continues:
 
